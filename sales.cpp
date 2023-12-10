@@ -5,9 +5,6 @@
 #include <random>
 #include <cmath>
 
-//
-#include <cstring>
-
 using namespace std;
 
 // simple structure to store city coordinates
@@ -23,6 +20,7 @@ int GetData(char* fname, COORD *cities);
 void scrambleArray(COORD* array, int size);
 double calculateDistance(COORD coordinate1, COORD coordinate2);
 double calculateTotalDistance(COORD* array, int size);
+void melt(COORD* array, int size, double& temperature, double& E);
 
 int main(int argc, char *argv[]){
   const int NMAX=2500;
@@ -30,34 +28,26 @@ int main(int argc, char *argv[]){
   int ncity=GetData(argv[1],cities);
 
   double Energy = calculateTotalDistance(cities, ncity);
+  double temperature = 0.4;
 
   cout << "Energy Prescramble: " << Energy << endl;
 
-  double newEnergy = Energy;
+  scrambleArray(cities, ncity);
+
+  Energy = calculateTotalDistance(cities, ncity);
+  /*
+  double newEnergy = calculateTotalDistance(cities, ncity);
 
   while(newEnergy >= Energy-100000) {
     cout << "this runs" << endl;
     scrambleArray(cities, ncity);
     newEnergy = calculateTotalDistance(cities, ncity);
   }
+  */
 
+  melt(cities, ncity, temperature, Energy);
 
-  //
-  double finalEnergy = calculateTotalDistance(cities, ncity);
-  cout << "Final Energy:\t" << finalEnergy << endl;
-
-  // creates data file for output
-  std::string outFileName_ = "salesman_cities.dat";
-  const char* outFileName = outFileName_.c_str();
-  FILE *outFile = fopen(outFileName, "w");
-
-  // loops through each coordinate and inputs it into the dat file
-  for (int index = 0; index < ncity; index++){
-
-    fprintf(outFile, "%lf %lf\n", cities[index].lon, cities[index].lat);
-  }
-
-  cout << "Energy Postscramble: " << newEnergy << endl;
+  cout << "Energy Postscramble: " << Energy << endl;
 
   printf("Read %d cities from data file\n",ncity);
   printf("Longitude  Latitude\n");
@@ -121,5 +111,73 @@ void scrambleArray(COORD* array, int size) {
     COORD temp = array[i];
     array[i] = array[randomIndex];
     array[randomIndex] = temp;
+  }
+}
+
+void melt(COORD* array, int size, double& temperature, double& E) {
+
+  srand(static_cast<unsigned int>(time(nullptr)));
+  double testE = E;
+  COORD* tempArray = array;
+
+  while (temperature > 0) {
+    for (int i = 0; i < 1000; i++) {
+      int randomIndex = rand() % size;
+      
+      if (randomIndex == 0) {
+	testE = testE - calculateDistance(tempArray[size-1], tempArray[randomIndex]);
+	testE = testE - calculateDistance(tempArray[randomIndex+1], tempArray[randomIndex+2]);
+	
+	COORD temp = tempArray[randomIndex];
+	tempArray[randomIndex] = tempArray[randomIndex+1];
+	tempArray[randomIndex+1] = temp;
+
+	testE = testE + calculateDistance(tempArray[size-1], tempArray[randomIndex]);
+	testE = testE + calculateDistance(tempArray[randomIndex+1], tempArray[randomIndex+2]);
+
+      } else if (randomIndex == size-1) {
+	testE = testE - calculateDistance(tempArray[randomIndex-1], tempArray[randomIndex]);
+	testE = testE - calculateDistance(tempArray[0], tempArray[1]);
+
+	COORD temp = tempArray[randomIndex];
+	tempArray[randomIndex] = tempArray[0];
+	tempArray[0] = temp;
+
+	testE = testE + calculateDistance(tempArray[randomIndex-1], tempArray[randomIndex]);
+	testE = testE + calculateDistance(tempArray[0], tempArray[1]);
+
+      } else if (randomIndex == size-2) {
+	testE = testE - calculateDistance(tempArray[randomIndex-1], tempArray[randomIndex]);
+	testE = testE - calculateDistance(tempArray[randomIndex+1], tempArray[0]);
+	
+	COORD temp = tempArray[randomIndex];
+	tempArray[randomIndex] = tempArray[randomIndex+1];
+	tempArray[randomIndex+1] = temp;
+
+	testE = testE + calculateDistance(tempArray[randomIndex-1], tempArray[randomIndex]);
+	testE = testE + calculateDistance(tempArray[randomIndex+1], tempArray[0]);
+
+      } else {
+	testE = testE - calculateDistance(tempArray[randomIndex-1], tempArray[randomIndex]);
+	testE = testE - calculateDistance(tempArray[randomIndex+1], tempArray[randomIndex+2]);
+	
+	COORD temp = tempArray[randomIndex];
+	tempArray[randomIndex] = tempArray[randomIndex+1];
+	tempArray[randomIndex+1] = temp;
+
+	testE = testE + calculateDistance(tempArray[randomIndex-1], tempArray[randomIndex]);
+	testE = testE + calculateDistance(tempArray[randomIndex+1], tempArray[randomIndex+2]);
+      }
+      
+      double metropolisRand = static_cast<double>(rand()) / RAND_MAX;
+
+      if (testE <= E || metropolisRand < exp(-testE/temperature)){
+	E = testE;
+      } else {
+	testE = E;
+      }
+    }
+    temperature-=0.01;
+    cout << temperature << endl;
   }
 }
