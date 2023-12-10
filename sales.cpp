@@ -5,6 +5,9 @@
 #include <random>
 #include <cmath>
 
+//
+#include <cstring>
+
 using namespace std;
 
 // simple structure to store city coordinates
@@ -36,6 +39,18 @@ int main(int argc, char *argv[]){
     cout << "this runs" << endl;
     scrambleArray(cities, ncity);
     newEnergy = calculateTotalDistance(cities, ncity);
+  }
+
+
+  // creates data file for output
+  std::string outFileName_ = "salesman_cities.dat";
+  const char* outFileName = outFileName_.c_str();
+  FILE *outFile = fopen(outFileName, "w");
+
+  // loops through each coordinate and inputs it into the dat file
+  for (int index = 0; index < ncity; index++){
+
+    fprintf(outFile, "%lf %lf\n", cities[index].lon, cities[index].lat);
   }
 
   cout << "Energy Postscramble: " << newEnergy << endl;
