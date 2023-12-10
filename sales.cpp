@@ -33,7 +33,7 @@ int main(int argc, char *argv[]){
 
   cout << "Energy Prescramble: " << Energy << endl;
 
-  double newEnergy = calculateTotalDistance(cities, ncity);
+  double newEnergy = Energy;
 
   while(newEnergy >= Energy-100000) {
     cout << "this runs" << endl;
@@ -41,6 +41,10 @@ int main(int argc, char *argv[]){
     newEnergy = calculateTotalDistance(cities, ncity);
   }
 
+
+  //
+  double finalEnergy = calculateTotalDistance(cities, ncity);
+  cout << "Final Energy:\t" << finalEnergy << endl;
 
   // creates data file for output
   std::string outFileName_ = "salesman_cities.dat";
