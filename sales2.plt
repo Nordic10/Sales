@@ -12,13 +12,13 @@ set style line 1 lc rgb 'gray' lt 1 lw 1
 #
 # plot world map and various city locations as an 'x'
 plot [-170:-60][10:70] "world.dat" with filledcu ls 1, \
-"cities2.dat" using 1:2 with linespoints lw 2 lc 7
+"salesman_cities2.dat" using 1:2 with linespoints lw 2 lc 7
 
 
 #make a png file of this plot
 set term push
 set term png
-set output "sales_NothAm2.png"
+set output "map.png"
 replot
 set output
 set term pop
